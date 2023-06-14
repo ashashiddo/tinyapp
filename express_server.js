@@ -48,6 +48,13 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+// POST route to delete a URL resource
+app.post("/urls/:id/delete", (req, res) => {
+    const id = req.params.id; // Get the URL ID from the request parameters
+    delete urlDatabase[id]; // Remove the URL from the urlDatabase using the delete operator
+    res.redirect("/urls"); // Redirect the client back to the urls_index page
+  });  
+
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
