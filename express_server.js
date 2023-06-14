@@ -2,8 +2,9 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 
-app.set("view engine", "ejs");
-app.use(express.urlencoded({ extended: true }));
+app.set("view engine", "ejs"); //view engine 
+
+app.use(express.urlencoded({ extended: true })); //middleware 
 
 // Implement to generate a random string of 6 alphanumeric characters
 function generateRandomString() {
