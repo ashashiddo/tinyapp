@@ -68,6 +68,10 @@ app.post("/urls", (req, res) => {
 
 app.get("/u/:id", (req, res) => {
   const longURL = urlDatabase[req.params.id]; // Get the longURL from the urlDatabase
+  const newLongURL = req.body.longURL; // Get the updated long URL from the form submission
+    
+  urlDatabase[id] = newLongURL;  // Update the value of the stored long URL
+  
   res.redirect(longURL); // Redirect to the longURL
 });
 
