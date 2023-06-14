@@ -75,6 +75,12 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL); // Redirect to the longURL
 });
 
+app.post("/login", (req, res) => {
+  const username = req.body.username; // Get the username from the form submission
+  res.cookie("username", username); // Set the "username" cookie with the provided value
+  res.redirect("/urls"); // Redirect the user back to the /urls page
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
