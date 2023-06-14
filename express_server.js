@@ -1,10 +1,11 @@
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080; // default port 8080
 
-app.set("view engine", "ejs"); //view engine 
-
-app.use(express.urlencoded({ extended: true })); //middleware 
+app.set("view engine", "ejs"); //view engine
+app.use(express.urlencoded({ extended: true })); //middleware
+app.use(cookieParser());
 
 // Implement to generate a random string of 6 alphanumeric characters
 function generateRandomString() {
@@ -36,7 +37,10 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { 
+    urls: urlDatabase,
+    username: req.cookies.username
+ };
   res.render("urls_index", templateVars);
 });
 
@@ -50,10 +54,10 @@ app.get("/urls/:id", (req, res) => {
 
 // POST route to delete a URL resource
 app.post("/urls/:id/delete", (req, res) => {
-    const id = req.params.id; // Get the URL ID from the request parameters
-    delete urlDatabase[id]; // Remove the URL from the urlDatabase using the delete operator
-    res.redirect("/urls"); // Redirect the client back to the urls_index page
-  });  
+  const id = req.params.id; // Get the URL ID from the request parameters
+  delete urlDatabase[id]; // Remove the URL from the urlDatabase using the delete operator
+  res.redirect("/urls"); // Redirect the client back to the urls_index page
+});
 
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
@@ -80,7 +84,7 @@ app.post("/login", (req, res) => {
   res.cookie("username", username); // Set the "username" cookie with the provided value
   res.redirect("/urls"); // Redirect the user back to the /urls page
 });
-
+  
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
