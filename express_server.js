@@ -17,8 +17,6 @@ function generateRandomString() {
   return result;
 }
 
-const shortURL = generateRandomString();
-
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -54,8 +52,15 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  const shortURL = generateRandomString(); // Generate a random short URL id
+  const longURL = req.body.longURL; // Get the longURL from the form submission
+  urlDatabase[shortURL] = longURL; // Save the shortURL and longURL to the urlDatabase
+  res.redirect(`/urls/${shortURL}`); // Redirect to the new short URL page
+});
+
+app.get("/u/:id", (req, res) => {
+  const longURL = urlDatabase[req.params.id]; // Get the longURL from the urlDatabase
+  res.redirect(longURL); // Redirect to the longURL
 });
 
 app.listen(PORT, () => {
