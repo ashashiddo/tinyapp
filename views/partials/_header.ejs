@@ -17,16 +17,14 @@
           <a class="nav-item nav-link" href="/urls">My URLs</a>
           <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
         </div>
-        <form method="POST" action="<% if (username) { %>/logout<% } else { %>/login<% } %>"
+        <form method="POST" action="<% if (user) { %>/logout<% } else { %>/login<% } %>"
             class="form-inline my-2 my-md-0">
-            <% if (username) { %> <!-- Display the username if it exists -->
+            <% if (user) { %> <!-- Display the user email if the user is logged in -->
               <p>Logged in as <%= user.email %></p>
               <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Log Out</button>
-            <% } else { %> <!-- Display the login form if the username is not set -->
-              <!-- <input class="form-control mr-sm-2" type="text" placeholder="Username" name="username"> -->
-              <input class="form-control mr-sm-2" type="text" placeholder="Email" name="email">
-              <input class="form-control mr-sm-2" type="password" placeholder="Password" name="password">
-              <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Log In</button>
+            <% } else { %> <!-- Display the login form if the user is not logged in -->
+              <a class="nav-item nav-link" href="/register">Register</a> <!-- Add Register link pointing to Register page -->
+              <a class="nav-item nav-link" href="/login">Login</a> <!-- Add Login link pointing to Login page -->
             <% } %>
           </form>
       </div>
