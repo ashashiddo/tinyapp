@@ -20,10 +20,12 @@
         <form method="POST" action="<% if (username) { %>/logout<% } else { %>/login<% } %>"
             class="form-inline my-2 my-md-0">
             <% if (username) { %> <!-- Display the username if it exists -->
-              <p>Logged in as <%= username %></p>
+              <p>Logged in as <%= user.email %></p>
               <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Log Out</button>
             <% } else { %> <!-- Display the login form if the username is not set -->
-              <input class="form-control mr-sm-2" type="text" placeholder="Username" name="username">
+              <!-- <input class="form-control mr-sm-2" type="text" placeholder="Username" name="username"> -->
+              <input class="form-control mr-sm-2" type="text" placeholder="Email" name="email">
+              <input class="form-control mr-sm-2" type="password" placeholder="Password" name="password">
               <button class="btn btn-outline-light my-2 my-sm-0" type="submit">Log In</button>
             <% } %>
           </form>
