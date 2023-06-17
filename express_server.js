@@ -108,10 +108,20 @@ app.post("/urls/:id/delete", (req, res) => { // POST route to delete a URL resou
 });
 
 app.get("/urls/new", (req, res) => {
+    const userId = req.cookies.user_id;
+    if (!userId) {
+      res.redirect("/login");
+      return;
+    }
   res.render("urls_new");
 });
 
 app.post("/urls", (req, res) => {
+    const userId = req.cookies.user_id;
+    if (!userId) {
+      res.status(401).send("You need to be logged in to shorten URLs.");
+      return;
+    }
   const shortURL = generateRandomString(); // Generate a random short URL id
   const longURL = req.body.longURL; // Get the longURL from the form submission
   urlDatabase[shortURL] = longURL; // Save the shortURL and longURL to the urlDatabase
