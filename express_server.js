@@ -76,16 +76,16 @@ app.post("/register", (req, res) => {
     }
   }
   const userId = generateRandomString(); // Generate a random user ID
+  const hashedPassword = bcrypt.hashSync(password, 10); // Hash the password
   const newUser = { // Create a new user object
     id: userId,
     email: email,
-    password: password,
+    password: hashedPassword,
   };
   
   users[userId] = newUser; // // Add the new user to the users object
   
   res.cookie("user_id", userId); // Set the user_id cookie with the newly generated ID
-
   res.redirect("/urls"); // Redirect the user to the /urls page
 });
     
