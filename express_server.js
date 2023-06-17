@@ -150,14 +150,23 @@ app.post("/logout", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
+  if (req.session.user) {
+  res.redirect('/urls'); // User is already logged in, redirect to /urls
+  }else {
   res.render("register");
+  }
 });
 
 app.get("/login", (req, res) => {
-  const templateVars = {
-    user: req.cookies.user_id
-  };
-  res.render("urls_login", templateVars);
+    if (req.session.user) {
+        // User is already logged in, redirect to /urls
+        res.redirect('/urls');
+      } else {
+        const templateVars = {
+          user: req.cookies.user_id
+        };
+        res.render('urls_login', templateVars);
+      }
 });
   
 app.listen(PORT, () => {
