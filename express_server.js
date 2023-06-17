@@ -51,6 +51,16 @@ function getUserByEmail(email) { // Helper function to look up a user by email
   }
   return null;
 }
+
+function urlsForUser(id) {
+  const userURLs = {};
+  for (const shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      userURLs[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return userURLs;
+}
   
 app.post("/register", (req, res) => {
   const { email, password } = req.body;
@@ -91,9 +101,9 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-    const userId = req.cookies.user_id;
+  const userId = req.cookies.user_id;
   if (!userId) {
-    res.status(401).send("Please log in or register to view your URLs.");
+    res.status(401).send("Please log in or register");
     return;
   }
   const userURLs = urlsForUser(userId); // Get URLs for the logged-in user
