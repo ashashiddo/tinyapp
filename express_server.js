@@ -20,10 +20,16 @@ function generateRandomString() {
 }
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW",
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW",
+  },
 };
-
+  
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -85,6 +91,12 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+    const userId = req.cookies.user_id;
+  if (!userId) {
+    res.status(401).send("Please log in or register to view your URLs.");
+    return;
+  }
+  const userURLs = urlsForUser(userId); // Get URLs for the logged-in user
   const templateVars = {
     urls: urlDatabase,
     user: users[req.cookies.user_id]
@@ -95,7 +107,7 @@ app.get("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[req.params.id],
+    longURL: urlDatabase[req.params.id].longURL, // Access the longURL property
     user: req.cookies.user_id
   };
   res.render("urls_show", templateVars);
@@ -108,37 +120,40 @@ app.post("/urls/:id/delete", (req, res) => { // POST route to delete a URL resou
 });
 
 app.get("/urls/new", (req, res) => {
-    const userId = req.cookies.user_id;
-    if (!userId) {
-      res.redirect("/login");
-      return;
-    }
+  const userId = req.cookies.user_id;
+  if (!userId) {
+    res.redirect("/login");
+    return;
+  }
   res.render("urls_new");
 });
 
 app.post("/urls", (req, res) => {
-    const userId = req.cookies.user_id;
-    if (!userId) {
-      res.status(401).send("You need to be logged in to shorten URLs.");
-      return;
-    }
-  const shortURL = generateRandomString(); // Generate a random short URL id
-  const longURL = req.body.longURL; // Get the longURL from the form submission
-  urlDatabase[shortURL] = longURL; // Save the shortURL and longURL to the urlDatabase
+  const userId = req.cookies.user_id;
+  if (!userId) {
+    res.status(401).send("You need to be logged in to shorten URLs.");
+    return;
+  }
+  const shortURL = generateRandomString();
+  const longURL = req.body.longURL;
+  urlDatabase[shortURL] = { // Save an object with longURL and userID properties
+    longURL: longURL,
+    userID: userId
+  };
   res.redirect(`/urls/${shortURL}`); // Redirect to the new short URL page
 });
 
 app.get("/u/:id", (req, res) => {
-    const shortURL = req.params.id;
-    const longURL = urlDatabase[shortURL];
+  const shortURL = req.params.id;
+  const longURL = urlDatabase[shortURL] ? urlDatabase[shortURL].longURL : null; // Access the longURL property
   
-    if (!longURL) {
-      res.status(404).send("The requested short URL does not exist.");
-      return;
-    }
+  if (!longURL) {
+    res.status(404).send("The requested short URL does not exist.");
+    return;
+  }
   
-    res.redirect(longURL);
-  });
+  res.redirect(longURL);
+});
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
@@ -164,22 +179,22 @@ app.post("/logout", (req, res) => {
 
 app.get("/register", (req, res) => {
   if (req.session.user) {
-  res.redirect('/urls'); // User is already logged in, redirect to /urls
-  }else {
-  res.render("register");
+    res.redirect('/urls'); // User is already logged in, redirect to /urls
+  } else {
+    res.render("register");
   }
 });
 
 app.get("/login", (req, res) => {
-    if (req.session.user) {
-        // User is already logged in, redirect to /urls
-        res.redirect('/urls');
-      } else {
-        const templateVars = {
-          user: req.cookies.user_id
-        };
-        res.render('urls_login', templateVars);
-      }
+  if (req.session.user) {
+    // User is already logged in, redirect to /urls
+    res.redirect('/urls');
+  } else {
+    const templateVars = {
+      user: req.cookies.user_id
+    };
+    res.render('urls_login', templateVars);
+  }
 });
   
 app.listen(PORT, () => {
