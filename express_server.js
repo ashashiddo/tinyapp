@@ -137,10 +137,24 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => { // POST route to delete a URL resource
-  const id = req.params.id; // Get the URL ID from the request parameters
-  delete urlDatabase[id]; // Remove the URL from the urlDatabase using the delete operator
-  res.redirect("/urls"); // Redirect the client back to the urls_index page
+  const userId = req.cookies.user_id;
+  if (!userId) {
+    res.status(401).send("Please log in or register to delete this URL.");
+    return;
+  }
+  const shortURL = req.params.id;
+  const url = urlDatabase[shortURL];
+
+  if (!url || url.userID !== userId) {
+    res.status(403).send("Access Denied. You do not have permission to delete this URL.");
+    return;
+  }
+  // Delete the URL from the database
+  delete urlDatabase[shortURL];
+
+  res.redirect("/urls");
 });
+
 
 app.get("/urls/new", (req, res) => {
   const userId = req.cookies.user_id;
@@ -218,6 +232,23 @@ app.get("/login", (req, res) => {
     };
     res.render('urls_login', templateVars);
   }
+});
+
+app.post("/urls/:id", (req, res) => {
+  const userId = req.cookies.user_id;
+  if (!userId) {
+    res.status(401).send("Please log in or register to edit this URL.");
+    return;
+  }
+  const shortURL = req.params.id;
+  const url = urlDatabase[shortURL];
+  if (!url || url.userID !== userId) {
+    res.status(403).send("Access Denied. You do not have permission to edit this URL.");
+    return;
+  }
+  // Update the URL with the edited data
+  urlDatabase[shortURL].longURL = req.body.longURL;
+  res.redirect("/urls");
 });
   
 app.listen(PORT, () => {
