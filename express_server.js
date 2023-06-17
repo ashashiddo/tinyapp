@@ -115,6 +115,19 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  const userId = req.cookies.user_id;
+  if (!userId) {
+    res.status(401).send("Please log in or register to view this");
+    return;
+  }
+
+  const shortURL = req.params.id;
+  const url = urlDatabase[shortURL];
+
+  if (!url || url.userID !== userId) {
+    res.status(403).send("Access Denied");
+    return;
+  }
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL, // Access the longURL property
