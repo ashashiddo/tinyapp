@@ -128,14 +128,17 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`); // Redirect to the new short URL page
 });
 
-app.post("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id]; // Get the longURL from the urlDatabase
-  const newLongURL = req.body.longURL; // Get the updated long URL from the form submission
+app.get("/u/:id", (req, res) => {
+    const shortURL = req.params.id;
+    const longURL = urlDatabase[shortURL];
   
-  urlDatabase[id] = newLongURL;  // Update the value of the stored long URL
+    if (!longURL) {
+      res.status(404).send("The requested short URL does not exist.");
+      return;
+    }
   
-  res.redirect(`/urls/${id}`); // Redirect to the longURL
-});
+    res.redirect(longURL);
+  });
 
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
