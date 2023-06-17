@@ -9,12 +9,12 @@ const { getUserByEmail } = require('./helpers');
 app.set("view engine", "ejs"); //view engine
 app.use(express.urlencoded({ extended: true })); //middleware
 app.use(cookieSession({
-    name: 'session',
-    keys: ["string"],
+  name: 'session',
+  keys: ["string"],
   
-    // Cookie Options
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-}))
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 
 // Implement to generate a random string of 6 alphanumeric characters
 function generateRandomString() {
@@ -84,7 +84,7 @@ app.post("/register", (req, res) => {
   
   users[userId] = newUser; // // Add the new user to the users object
   
-  req.session.user_id = userId
+  req.session.user_id = userId;
   res.redirect("/urls"); // Redirect the user to the /urls page
 });
     
@@ -226,14 +226,14 @@ app.get("/register", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-    if (req.session.user_id) {
-        // User is already logged in, redirect to /urls
-        res.redirect('/urls');
-      } else {
-        const templateVars = {
-          user: req.session.user_id
-        };
-        res.render('urls_login', templateVars);
+  if (req.session.user_id) {
+    // User is already logged in, redirect to /urls
+    res.redirect('/urls');
+  } else {
+    const templateVars = {
+      user: req.session.user_id
+    };
+    res.render('urls_login', templateVars);
   }
 });
 
