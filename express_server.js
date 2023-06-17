@@ -3,6 +3,8 @@ const cookieSession = require("cookie-session");
 const app = express();
 const PORT = 8080; // default port 8080
 const bcrypt = require("bcryptjs");
+const { getUserByEmail } = require('./helpers');
+
 
 app.set("view engine", "ejs"); //view engine
 app.use(express.urlencoded({ extended: true })); //middleware
@@ -50,15 +52,6 @@ const users = {
   },
 };
 
-function getUserByEmail(email) { // Helper function to look up a user by email
-  for (const userId in users) {
-    if (users[userId].email === email) {
-      return users[userId];
-    }
-  }
-  return null;
-}
-
 function urlsForUser(id) {
   const userURLs = {};
   for (const shortURL in urlDatabase) {
@@ -91,7 +84,7 @@ app.post("/register", (req, res) => {
   
   users[userId] = newUser; // // Add the new user to the users object
   
-  res.session.user_id = userId
+  req.session.user_id = userId
   res.redirect("/urls"); // Redirect the user to the /urls page
 });
     
@@ -205,7 +198,7 @@ app.post("/login", (req, res) => {
     res.status(400).send("Email and password are required");
     return;
   }
-  const user = getUserByEmail(email); // Look up the user by email
+  const user = getUserByEmail(email, users); // Look up the user by email
   if (!user) {    // Check if a user with that email exists
     res.status(403).send("User not found");
     return;
@@ -215,6 +208,8 @@ app.post("/login", (req, res) => {
     res.status(403).send("Invalid email or password");
     return;
   }
+  req.session.user_id = user.id;
+  res.redirect("/urls");
 });
 
 app.post("/logout", (req, res) => {
@@ -231,19 +226,19 @@ app.get("/register", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  if (req.session.user_id) {
-    // User is already logged in, redirect to /urls
-    res.redirect('/urls');
-  } else {
-    const templateVars = {
-      user: req.session.user_id
-    };
-    res.render('urls_login', templateVars);
+    if (req.session.user_id) {
+        // User is already logged in, redirect to /urls
+        res.redirect('/urls');
+      } else {
+        const templateVars = {
+          user: req.session.user_id
+        };
+        res.render('urls_login', templateVars);
   }
 });
 
 app.post("/urls/:id", (req, res) => {
-  const userId = req.session.userId;
+  const userId = req.session.user_id;
   if (!userId) {
     res.status(401).send("Please log in or register to edit this URL.");
     return;
