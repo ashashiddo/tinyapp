@@ -213,7 +213,8 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id"); //Clear the user_id cookie
+  // res.clearCookie("user_id"); //Clear the user_id cookie
+  req.session = null;
   res.redirect("/login"); // Redirect the user to the login page
 });
 
@@ -221,7 +222,10 @@ app.get("/register", (req, res) => {
   if (req.session.user_id) {
     res.redirect('/urls'); // User is already logged in, redirect to /urls
   } else {
-    res.render("register");
+    const templateVars = {
+        user: null
+    };
+    res.render("register", templateVars);
   }
 });
 
