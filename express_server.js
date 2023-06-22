@@ -82,15 +82,11 @@ app.post("/register", (req, res) => {
     password: hashedPassword,
   };
   
-  users[userId] = newUser; // Add the new user to the users object
-  
-  // Remove default URLs for the newly registered user
-  urlDatabase[userId] = {};
+  users[userId] = newUser; // // Add the new user to the users object
   
   req.session.user_id = userId;
   res.redirect("/urls"); // Redirect the user to the /urls page
 });
-  
     
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -106,44 +102,54 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const userId = req.session.user_id;
-  
+  if (!userId) {
+    res.status(401).send("Please log in or register");
+    return;
+  }
+  const userURLs = urlsForUser(userId); // Get URLs for the logged-in user
+  const templateVars = {
+    urls: userURLs,
+    user: users[req.session.user_id]
+  };
+  res.render("urls_index", templateVars);
+
+});
+
+app.get("/urls/new", (req, res) => {
+  const userId = req.session.user_id;
+  const templateVars = {
+    user: users[req.session.user_id]
+  }
   if (!userId) {
     res.redirect("/login");
     return;
   }
-  
-  const userURLs = urlsForUser(userId); // Get URLs for the logged-in user
-  const templateVars = {
-    urls: userURLs, // Use userURLs instead of urlDatabase
-    user: users[req.session.user_id]
-  };
-  res.render("urls_index", templateVars);
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:id", (req, res) => {
-  const userId = req.session.user_id;
-  if (!userId) {
-    res.status(401).send("Please log in or register to view this");
-    return;
-  }
-  
-  const shortURL = req.params.id;
+    const userId = req.session.user_id;
+    if (!userId) {
+        res.status(401).send("Please log in or register to view this");
+        return;
+    }
+    
+    const shortURL = req.params.id;
   const url = urlDatabase[shortURL];
-  
+
   if (!url || url.userID !== userId) {
     res.status(403).send("Access Denied");
     return;
   }
   const templateVars = {
     id: req.params.id,
-    longURL: url.longURL, // Access the longURL property directly from 'url' object
-    user: users[userId] // Access the user object using 'userId'
+    longURL: urlDatabase[req.params.id].longURL, // Access the longURL property
+    user: req.session.user_id
   };
   res.render("urls_show", templateVars);
 });
 
-
-app.post("/urls/:id/delete", (req, res) => {
+app.post("/urls/:id/delete", (req, res) => { // POST route to delete a URL resource
   const userId = req.session.user_id;
   if (!userId) {
     res.status(401).send("Please log in or register to delete this URL.");
@@ -151,27 +157,18 @@ app.post("/urls/:id/delete", (req, res) => {
   }
   const shortURL = req.params.id;
   const url = urlDatabase[shortURL];
-  
+
   if (!url || url.userID !== userId) {
     res.status(403).send("Access Denied. You do not have permission to delete this URL.");
     return;
   }
   // Delete the URL from the database
   delete urlDatabase[shortURL];
-  
+
   res.redirect("/urls");
 });
-  
 
 
-app.get("/urls/new", (req, res) => {
-  const userId = req.session.user_id;
-  if (!userId) {
-    res.redirect("/login");
-    return;
-  }
-  res.render("urls_new");
-});
 
 app.post("/urls", (req, res) => {
   const userId = req.session.user_id;
@@ -223,6 +220,7 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {
   // res.clearCookie("user_id"); //Clear the user_id cookie
   req.session = null;
+  console.log("Hello");
   res.redirect("/login"); // Redirect the user to the login page
 });
 
@@ -231,7 +229,7 @@ app.get("/register", (req, res) => {
     res.redirect('/urls'); // User is already logged in, redirect to /urls
   } else {
     const templateVars = {
-      user: null
+        user: null
     };
     res.render("register", templateVars);
   }
