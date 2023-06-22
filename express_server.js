@@ -108,7 +108,7 @@ app.get("/urls", (req, res) => {
   }
   const userURLs = urlsForUser(userId); // Get URLs for the logged-in user
   const templateVars = {
-    urls: urlDatabase,
+    urls: userURLs, // Pass the user's URLs to the template
     user: users[req.session.user_id]
   };
   res.render("urls_index", templateVars);
