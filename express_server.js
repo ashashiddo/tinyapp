@@ -106,13 +106,15 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const userId = req.session.user_id;
+  
   if (!userId) {
-    res.status(401).send("Please log in or register");
+    res.redirect("/login");
     return;
   }
+  
   const userURLs = urlsForUser(userId); // Get URLs for the logged-in user
   const templateVars = {
-    urls: urlDatabase,
+    urls: userURLs, // Use userURLs instead of urlDatabase
     user: users[req.session.user_id]
   };
   res.render("urls_index", templateVars);
