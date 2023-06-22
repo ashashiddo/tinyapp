@@ -63,30 +63,34 @@ function urlsForUser(id) {
 }
   
 app.post("/register", (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) { // Check if the email or password is missing
-    res.status(400).send("Email and password are required");
-    return;
-  }
-  for (const userId in users) { // Check if the email already exists in the users object
-    if (users[userId].email === email) {
-      res.status(400).send("Email already registered");
+    const { email, password } = req.body;
+    if (!email || !password) { // Check if the email or password is missing
+      res.status(400).send("Email and password are required");
       return;
     }
-  }
-  const userId = generateRandomString(); // Generate a random user ID
-  const hashedPassword = bcrypt.hashSync(password, 10); // Hash the password
-  const newUser = { // Create a new user object
-    id: userId,
-    email: email,
-    password: hashedPassword,
-  };
+    for (const userId in users) { // Check if the email already exists in the users object
+      if (users[userId].email === email) {
+        res.status(400).send("Email already registered");
+        return;
+      }
+    }
+    const userId = generateRandomString(); // Generate a random user ID
+    const hashedPassword = bcrypt.hashSync(password, 10); // Hash the password
+    const newUser = { // Create a new user object
+      id: userId,
+      email: email,
+      password: hashedPassword,
+    };
   
-  users[userId] = newUser; // // Add the new user to the users object
+    users[userId] = newUser; // Add the new user to the users object
   
-  req.session.user_id = userId;
-  res.redirect("/urls"); // Redirect the user to the /urls page
-});
+    // Remove default URLs for the newly registered user
+    urlDatabase[userId] = {};
+  
+    req.session.user_id = userId;
+    res.redirect("/urls"); // Redirect the user to the /urls page
+  });
+  
     
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -108,7 +112,7 @@ app.get("/urls", (req, res) => {
   }
   const userURLs = urlsForUser(userId); // Get URLs for the logged-in user
   const templateVars = {
-    urls: userURLs, // Pass the user's URLs to the template
+    urls: urlDatabase,
     user: users[req.session.user_id]
   };
   res.render("urls_index", templateVars);
@@ -131,29 +135,6 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id].longURL, // Access the longURL property
-    user: req.session.user_id
-  };
-  res.render("urls_show", templateVars);
-});
-
-app.get("/urls/:id/edit", (req, res) => {
-  const userId = req.session.user_id;
-  if (!userId) {
-    res.status(401).send("Please log in or register to edit this URL.");
-    return;
-  }
-  
-  const shortURL = req.params.id;
-  const url = urlDatabase[shortURL];
-  
-  if (!url || url.userID !== userId) {
-    res.status(403).send("Access Denied");
-    return;
-  }
-  
-  const templateVars = {
-    id: req.params.id,
-    longURL: urlDatabase[req.params.id].longURL,
     user: req.session.user_id
   };
   res.render("urls_show", templateVars);
@@ -246,7 +227,7 @@ app.get("/register", (req, res) => {
     res.redirect('/urls'); // User is already logged in, redirect to /urls
   } else {
     const templateVars = {
-      user: null
+        user: null
     };
     res.render("register", templateVars);
   }
@@ -280,10 +261,6 @@ app.post("/urls/:id", (req, res) => {
   urlDatabase[shortURL].longURL = req.body.longURL;
   res.redirect("/urls");
 });
-
-app.use((req, res) => {
-  res.status(404).send("404 - Page Not Found");
-});  
   
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
