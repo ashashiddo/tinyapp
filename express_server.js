@@ -63,33 +63,33 @@ function urlsForUser(id) {
 }
   
 app.post("/register", (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) { // Check if the email or password is missing
-      res.status(400).send("Email and password are required");
+  const { email, password } = req.body;
+  if (!email || !password) { // Check if the email or password is missing
+    res.status(400).send("Email and password are required");
+    return;
+  }
+  for (const userId in users) { // Check if the email already exists in the users object
+    if (users[userId].email === email) {
+      res.status(400).send("Email already registered");
       return;
     }
-    for (const userId in users) { // Check if the email already exists in the users object
-      if (users[userId].email === email) {
-        res.status(400).send("Email already registered");
-        return;
-      }
-    }
-    const userId = generateRandomString(); // Generate a random user ID
-    const hashedPassword = bcrypt.hashSync(password, 10); // Hash the password
-    const newUser = { // Create a new user object
-      id: userId,
-      email: email,
-      password: hashedPassword,
-    };
+  }
+  const userId = generateRandomString(); // Generate a random user ID
+  const hashedPassword = bcrypt.hashSync(password, 10); // Hash the password
+  const newUser = { // Create a new user object
+    id: userId,
+    email: email,
+    password: hashedPassword,
+  };
   
-    users[userId] = newUser; // Add the new user to the users object
+  users[userId] = newUser; // Add the new user to the users object
   
-    // Remove default URLs for the newly registered user
-    urlDatabase[userId] = {};
+  // Remove default URLs for the newly registered user
+  urlDatabase[userId] = {};
   
-    req.session.user_id = userId;
-    res.redirect("/urls"); // Redirect the user to the /urls page
-  });
+  req.session.user_id = userId;
+  res.redirect("/urls"); // Redirect the user to the /urls page
+});
   
     
 app.get("/", (req, res) => {
@@ -124,23 +124,24 @@ app.get("/urls/:id", (req, res) => {
     res.status(401).send("Please log in or register to view this");
     return;
   }
-
+  
   const shortURL = req.params.id;
   const url = urlDatabase[shortURL];
-
+  
   if (!url || url.userID !== userId) {
     res.status(403).send("Access Denied");
     return;
   }
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[req.params.id].longURL, // Access the longURL property
-    user: req.session.user_id
+    longURL: url.longURL, // Access the longURL property directly from 'url' object
+    user: users[userId] // Access the user object using 'userId'
   };
   res.render("urls_show", templateVars);
 });
 
-app.post("/urls/:id/delete", (req, res) => { // POST route to delete a URL resource
+
+app.post("/urls/:id/delete", (req, res) => {
   const userId = req.session.user_id;
   if (!userId) {
     res.status(401).send("Please log in or register to delete this URL.");
@@ -148,16 +149,17 @@ app.post("/urls/:id/delete", (req, res) => { // POST route to delete a URL resou
   }
   const shortURL = req.params.id;
   const url = urlDatabase[shortURL];
-
+  
   if (!url || url.userID !== userId) {
     res.status(403).send("Access Denied. You do not have permission to delete this URL.");
     return;
   }
   // Delete the URL from the database
   delete urlDatabase[shortURL];
-
+  
   res.redirect("/urls");
 });
+  
 
 
 app.get("/urls/new", (req, res) => {
@@ -227,7 +229,7 @@ app.get("/register", (req, res) => {
     res.redirect('/urls'); // User is already logged in, redirect to /urls
   } else {
     const templateVars = {
-        user: null
+      user: null
     };
     res.render("register", templateVars);
   }
