@@ -280,6 +280,10 @@ app.post("/urls/:id", (req, res) => {
   urlDatabase[shortURL].longURL = req.body.longURL;
   res.redirect("/urls");
 });
+
+app.use((req, res) => {
+  res.status(404).send("404 - Page Not Found");
+});  
   
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
