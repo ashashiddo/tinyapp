@@ -136,6 +136,29 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.get("/urls/:id/edit", (req, res) => {
+  const userId = req.session.user_id;
+  if (!userId) {
+    res.status(401).send("Please log in or register to edit this URL.");
+    return;
+  }
+  
+  const shortURL = req.params.id;
+  const url = urlDatabase[shortURL];
+  
+  if (!url || url.userID !== userId) {
+    res.status(403).send("Access Denied");
+    return;
+  }
+  
+  const templateVars = {
+    id: req.params.id,
+    longURL: urlDatabase[req.params.id].longURL,
+    user: req.session.user_id
+  };
+  res.render("urls_show", templateVars);
+});
+
 app.post("/urls/:id/delete", (req, res) => { // POST route to delete a URL resource
   const userId = req.session.user_id;
   if (!userId) {
@@ -223,7 +246,7 @@ app.get("/register", (req, res) => {
     res.redirect('/urls'); // User is already logged in, redirect to /urls
   } else {
     const templateVars = {
-        user: null
+      user: null
     };
     res.render("register", templateVars);
   }
